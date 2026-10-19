@@ -13,16 +13,19 @@ type Point = { t: number; midi: number | null };
 type Props = {
   reading: NoteReading | null;
   targetMidi?: number | null;
+  centerMidi?: number | null; // pin the view here, e.g. the middle of a scale
   height?: number;
 };
 
-export function PitchGraph({ reading, targetMidi = null, height = 260 }: Props) {
+export function PitchGraph({ reading, targetMidi = null, centerMidi = null, height = 260 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const readingRef = useRef(reading);
   const targetRef = useRef(targetMidi);
+  const centerRef = useRef(centerMidi);
 
   useEffect(() => { readingRef.current = reading; }, [reading]);
   useEffect(() => { targetRef.current = targetMidi; }, [targetMidi]);
+  useEffect(() => { centerRef.current = centerMidi; }, [centerMidi]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -30,7 +33,7 @@ export function PitchGraph({ reading, targetMidi = null, height = 260 }: Props) 
     if (!canvas || !ctx) return;
 
     const points: Point[] = [];
-    let center = targetRef.current ?? 57; // start the view around A3
+    let center = centerRef.current ?? targetRef.current ?? 57; // start the view around A3
     let raf = 0;
 
     const draw = () => {
@@ -42,8 +45,8 @@ export function PitchGraph({ reading, targetMidi = null, height = 260 }: Props) 
       points.push({ t: now, midi: r ? r.midi : null });
       while (points.length && now - points[0].t > WINDOW_MS) points.shift();
 
-      // 2. Glide the view towards the target, or towards your voice
-      const focus = target ?? (r ? r.midi : null);
+      // 2. Glide the view towards the pinned centre, the target, or your voice
+      const focus = centerRef.current ?? target ?? (r ? r.midi : null);
       if (focus !== null) center += (focus - center) * 0.05;
 
       // 3. Match the canvas to its on-screen size (sharp on retina screens)
