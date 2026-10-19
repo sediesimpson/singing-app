@@ -8,28 +8,18 @@ import { midiToNoteName } from "@/lib/audio/notes";
 import { IN_TUNE_CENTS } from "@/lib/audio/config";
 import { scoreAttempt, type AttemptResult, type Sample } from "@/lib/exercises/scoring";
 import { PitchGraph } from "@/components/PitchGraph";
+import { sleep } from "@/lib/utils";
+import { VOICE_RANGES, randomNoteInRange, type Voice } from "@/lib/exercises/voices";
 
 type Phase = "idle" | "listen" | "sing" | "result";
-
-const VOICE_RANGES = {
-  lower: { label: "Lower voice", low: 45, high: 57 },  // A2–A3
-  higher: { label: "Higher voice", low: 57, high: 69 }, // A3–A4
-} as const;
-type Voice = keyof typeof VOICE_RANGES;
 
 const TONE_SECONDS = 1.5;
 const GAP_MS = 300;
 const SING_MS = 3000;
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 function pickTarget(voice: Voice, previous: number | null): number {
   const { low, high } = VOICE_RANGES[voice];
-  let note: number;
-  do {
-    note = low + Math.floor(Math.random() * (high - low + 1));
-  } while (note === previous);
-  return note;
+  return randomNoteInRange(low, high, previous);
 }
 
 function feedback(r: AttemptResult): string {
@@ -57,8 +47,8 @@ export default function MatchPage() {
   }, [phase, reading]);
 
   useEffect(() => {
-  preloadTone();
-}, []);
+    preloadTone();
+  }, []);
 
   async function runRound(note: number) {
     if (!isListening) await start();
