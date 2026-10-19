@@ -1,0 +1,1 @@
+export const IN_TUNE_CENTS = 20; // beginner-friendly; tighten to 10 as you improve
