@@ -27,9 +27,14 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-6 p-8">
       <h1 className="text-2xl font-medium">Pitch trainer</h1>
-      <Link href="/match" className="text-sm text-gray-500 hover:underline">
-        Try the match-the-note exercise →
-      </Link>
+      <div className="flex gap-4">
+        <Link href="/match" className="text-sm text-gray-500 hover:underline">
+          Try the match-the-note exercise →
+        </Link>
+        <Link href="/scale" className="text-sm text-gray-500 hover:underline">
+          Try the 5-note scale →
+        </Link>
+      </div>
 
       <div className="w-full max-w-2xl flex flex-col gap-4">
         <div className="flex items-end justify-between">

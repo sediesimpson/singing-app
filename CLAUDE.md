@@ -28,17 +28,20 @@ npm run lint
 app/
   page.tsx            Free practice: live note display, target picker, pitch graph
   match/page.tsx      Match-the-note exercise
-  scale/page.tsx      5-note scale exercise (Phase 3b, not built yet)
+  scale/page.tsx      5-note scale exercise
 components/
   PitchGraph.tsx      Scrolling canvas graph of your voice vs target band
 lib/
+  utils.ts            sleep()
   audio/
     notes.ts          Hz <-> MIDI <-> note name maths, cents
     usePitch.ts       Mic + pitchy hook, with median smoothing and dropout hold
     tonePlayer.ts     playTone(midi, seconds) using voice samples, synth fallback, preloadTone()
     config.ts         IN_TUNE_CENTS (shared in-tune threshold, currently 20)
   exercises/
-    scoring.ts        scoreAttempt(): accuracy %, avg cents, settle time, octave folding
+    scoring.ts        scoreAttempt(): accuracy %, avg cents, settle time, octave folding; scoreSequence() for patterns
+    voices.ts         VOICE_RANGES, Voice, randomNoteInRange()
+    patterns.ts       Pattern type, FIVE_NOTE_SCALE (semitone offsets + syllables)
 ```
 
 ## Conventions
@@ -77,19 +80,12 @@ lib/
 - `scoring.ts`: `scoreAttempt`, with a 500 ms settle time, at least 10 samples, octave folding via `centsFromTarget`, accuracy as % of time in tune, and signed average cents.
 - `/match` page: lower/higher voice toggle, play → sing for 3 s → score, with sharp/flat feedback, "Try again" and "Next note".
 
-### Next up: Phase 3b, the 5-note scale (on branch `phase-3-exercises`)
-
-The full step-by-step was outlined in chat. Summary:
-
-1. **Extract shared pieces.**
-   - `lib/utils.ts`: `sleep`.
-   - `lib/exercises/voices.ts`: `VOICE_RANGES`, `Voice`, `randomNoteInRange()`.
-   - `lib/exercises/patterns.ts`: a `Pattern` type and `FIVE_NOTE_SCALE` (offsets 0,2,4,5,7,5,4,2,0 with Do Re Mi Fa Sol Fa Mi Re Do).
-   - Update `/match` to import these, and check it still works.
-2. **`scoring.ts`.** Give `scoreAttempt` optional `{ settleMs, minSamples }`, keeping the defaults unchanged. Add `scoreSequence(samples, windows)`, which scores each note window with a 150 ms settle time and at least 5 samples, counts missed notes as 0, and returns `{ perNote, overall }`.
-3. **`PitchGraph`.** Add an optional `centerMidi` prop to pin the view, using the priority `centerMidi ?? target ?? voice`.
-4. **`/scale` page.** Phases `idle -> listen -> ready -> sing -> result`. Play the pattern (0.55 s per note), pause for 1 s, then sing with 800 ms per note while recording each note window. Show per-note chips coloured by accuracy, an overall %, and the "trickiest note" tip. Pick the root with `high - SPAN` so the top note stays in range, and pin the graph centre to `root + SPAN/2`.
-5. Link `/scale` from the home page. Commit, open a PR and merge. That completes Phase 3.
+**Phase 3b: 5-note scale.**
+- Shared pieces extracted: `lib/utils.ts` (`sleep`), `lib/exercises/voices.ts`, `lib/exercises/patterns.ts`. `/match` imports them.
+- `scoreAttempt` takes optional `{ settleMs, minSamples }`. `scoreSequence(samples, windows)` scores each note window (150 ms settle, at least 5 samples), counts missed notes as 0 and returns `{ perNote, overall }`.
+- `PitchGraph` has an optional `centerMidi` prop; the view follows `centerMidi ?? target ?? voice`.
+- `/scale` page: `idle -> listen -> ready -> sing -> result`. Plays the pattern at 0.55 s per note, waits 1 s, then 800 ms per sung note. Per-note chips (highlight the current note, then show accuracy), overall %, and a "trickiest note" tip. Root is picked from `low..high - SPAN`; the graph is pinned to `root + SPAN/2` while the target band moves note by note.
+- Linked from the home page.
 
 ### To do
 
