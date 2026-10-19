@@ -5,11 +5,13 @@ import { usePitch } from "@/lib/audio/usePitch";
 export default function Home() {
   const { reading, isListening, error, start, stop } = usePitch();
 
-  const centsColor =
-    reading && Math.abs(reading.cents) <= 10
+  const IN_TUNE_CENTS = 20; // beginner-friendly; tighten to 10 as you improve
+
+    const centsColor =
+    reading && Math.abs(reading.cents) <= IN_TUNE_CENTS
       ? "text-green-600"
       : "text-amber-600";
-
+      
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-6 p-8">
       <h1 className="text-2xl font-medium">Pitch detector</h1>

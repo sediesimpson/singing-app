@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PitchDetector } from "pitchy";
-import { frequencyToNote, type NoteReading } from "./notes";
+import { frequencyToMidi, frequencyToNote, midiToFrequency, type NoteReading } from "./notes";
 
-const MIN_CLARITY = 0.9;  // how confident pitchy must be (0–1)
-const MIN_FREQ = 60;      // ignore anything below a very low bass voice
-const MAX_FREQ = 1200;    // ignore anything above a very high soprano
+const MIN_CLARITY = 0.9;
+const MIN_FREQ = 60;
+const MAX_FREQ = 1200;
+const SMOOTHING_WINDOW = 7; // median of the last 7 frames (~115 ms)
+const HOLD_FRAMES = 10;     // ride through dropouts shorter than ~165 ms
 
 export function usePitch() {
   const [reading, setReading] = useState<NoteReading | null>(null);
@@ -45,14 +47,28 @@ export function usePitch() {
       const detector = PitchDetector.forFloat32Array(analyser.fftSize);
       const buffer = new Float32Array(detector.inputLength);
 
+            const history: number[] = [];
+      let missedFrames = 0;
+
       const tick = () => {
         analyser.getFloatTimeDomainData(buffer);
         const [pitch, clarity] = detector.findPitch(buffer, audioCtx.sampleRate);
+        const isValid = clarity >= MIN_CLARITY && pitch >= MIN_FREQ && pitch <= MAX_FREQ;
 
-        if (clarity >= MIN_CLARITY && pitch >= MIN_FREQ && pitch <= MAX_FREQ) {
-          setReading(frequencyToNote(pitch));
+        if (isValid) {
+          missedFrames = 0;
+          history.push(frequencyToMidi(pitch));
+          if (history.length > SMOOTHING_WINDOW) history.shift();
+
+          const sorted = [...history].sort((a, b) => a - b);
+          const median = sorted[Math.floor(sorted.length / 2)];
+          setReading(frequencyToNote(midiToFrequency(median)));
         } else {
-          setReading(null); // silence, noise, or unclear sound
+          missedFrames++;
+          if (missedFrames > HOLD_FRAMES) {
+            history.length = 0;
+            setReading(null);
+          }
         }
         rafRef.current = requestAnimationFrame(tick);
       };
