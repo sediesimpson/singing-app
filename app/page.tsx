@@ -5,6 +5,7 @@ import { usePitch } from "@/lib/audio/usePitch";
 import { midiToNoteName } from "@/lib/audio/notes";
 import { IN_TUNE_CENTS } from "@/lib/audio/config";
 import { PitchGraph } from "@/components/PitchGraph";
+import Link from "next/link";
 
 const TARGET_OPTIONS = Array.from({ length: 25 }, (_, i) => 45 + i); // A2 up to A4
 
@@ -26,6 +27,9 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-6 p-8">
       <h1 className="text-2xl font-medium">Pitch trainer</h1>
+      <Link href="/match" className="text-sm text-gray-500 hover:underline">
+        Try the match-the-note exercise →
+      </Link>
 
       <div className="w-full max-w-2xl flex flex-col gap-4">
         <div className="flex items-end justify-between">
