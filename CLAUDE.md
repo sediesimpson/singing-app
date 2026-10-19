@@ -28,7 +28,6 @@ npm run lint
 app/
   page.tsx            Free practice: live note display, target picker, pitch graph
   match/page.tsx      Match-the-note exercise
-  scale/page.tsx      5-note scale exercise
 components/
   PitchGraph.tsx      Scrolling canvas graph of your voice vs target band
 lib/
@@ -84,8 +83,7 @@ lib/
 - Shared pieces extracted: `lib/utils.ts` (`sleep`), `lib/exercises/voices.ts`, `lib/exercises/patterns.ts`. `/match` imports them.
 - `scoreAttempt` takes optional `{ settleMs, minSamples }`. `scoreSequence(samples, windows)` scores each note window (150 ms settle, at least 5 samples), counts missed notes as 0 and returns `{ perNote, overall }`.
 - `PitchGraph` has an optional `centerMidi` prop; the view follows `centerMidi ?? target ?? voice`.
-- `/scale` page: `idle -> listen -> ready -> sing -> result`. Plays the pattern at 0.55 s per note, waits 1 s, then 800 ms per sung note. Per-note chips (highlight the current note, then show accuracy), overall %, and a "trickiest note" tip. Root is picked from `low..high - SPAN`; the graph is pinned to `root + SPAN/2` while the target band moves note by note.
-- Linked from the home page.
+- **`/scale` page shelved for now** (focusing on pitch practice). It was built and then removed; it's in git history (commit `6bd6aa1`) if we bring it back. The `lib/` pieces above stay.
 
 ### To do
 
