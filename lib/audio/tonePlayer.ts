@@ -26,6 +26,13 @@ function getVoice(): Promise<Soundfont> {
   return voicePromise;
 }
 
+// Phones (iPhone Safari especially) only let audio start as a direct result of a tap.
+// Call this synchronously in a click handler, before any `await`, or the phone stays silent.
+export function unlockAudio(): void {
+  const ctx = getAudioContext();
+  if (ctx.state !== "running") void ctx.resume();
+}
+
 // Start downloading the samples early so the first note isn't delayed
 export function preloadTone(): void {
   getVoice().catch(() => {});

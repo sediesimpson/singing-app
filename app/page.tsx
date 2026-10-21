@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePitch } from "@/lib/audio/usePitch";
-import { playTone, preloadTone } from "@/lib/audio/tonePlayer";
+import { playTone, preloadTone, unlockAudio } from "@/lib/audio/tonePlayer";
 import { DIFFICULTY_LEVELS, type Difficulty } from "@/lib/audio/config";
 import { scoreAttempt, type AttemptResult, type Sample } from "@/lib/exercises/scoring";
 import { PitchGraph } from "@/components/PitchGraph";
@@ -85,6 +85,7 @@ export default function MatchPage() {
   }
 
   async function runRound(note: number) {
+    unlockAudio(); // must come first: after the first `await` the phone no longer counts this as part of the tap
     if (!isListening) await start();
     setResult(null);
     setSaveState("idle");
