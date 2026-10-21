@@ -122,6 +122,7 @@ lib/
 
 ## Known notes and ideas
 
+- **iPhone audio:** call `unlockAudio()` synchronously at the start of a tap handler, before any `await`, or Safari stays silent. And keep the mic closed while reference notes play: iOS turns playback down (earpiece-quiet) whenever the mic is open. The match page opens the mic only for the sing phase.
 - If the reading shows "—" too often, try `MIN_CLARITY = 0.85` in `usePitch.ts`.
 - The voice samples download from the internet on first use; `preloadTone()` is called on page mount to hide the delay.
 - Run `getSoundfontNames()` from `smplr` to list the available sample instruments.
