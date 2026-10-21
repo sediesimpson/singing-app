@@ -33,10 +33,13 @@ app/
   auth/actions.ts     logIn / signUp Server Actions
   auth/confirm/       Route handler for the email confirmation link
   auth/error/         Shown when a confirmation link is broken or expired
+  progress/           Progress page (logged-in only): ProgressView loads attempts in the browser
 components/
   PitchGraph.tsx      Scrolling canvas graph of your voice vs target band
   SegmentedControl.tsx  Pill-shaped switch (difficulty, voice)
   AuthForm.tsx        Log-in / sign-up form
+  AccuracyChart.tsx   SVG line chart (average score per day) with hover/keyboard readout
+  score.ts            Shared green/amber/red score colours
 supabase/migrations/  SQL to run in the Supabase SQL editor
 lib/
   utils.ts            sleep()
@@ -50,6 +53,7 @@ lib/
     scoring.ts        scoreAttempt(): accuracy %, avg cents, settle time, octave folding; scoreSequence() for patterns
     voices.ts         VOICE_RANGES, Voice, randomNoteInRange()
     patterns.ts       Pattern type, FIVE_NOTE_SCALE (semitone offsets + syllables)
+    progress.ts       Progress stats: day streak, summary, daily accuracy, tendency, low/middle/high range bands
 ```
 
 ## Conventions
@@ -103,8 +107,10 @@ lib/
 - Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local` (see `.env.example`).
 - Supabase dashboard: Auth → URL Configuration needs `http://localhost:3000/auth/confirm` in Redirect URLs (and the Vercel URL later).
 
-**Phase 5: Progress page.**
-- A `/progress` page: accuracy over time, streak, attempts per exercise, and sharp/flat tendency.
+**Phase 5: Progress page** (branch `phase-5-progress`).
+- `/progress`, logged-in only (proxy redirects to `/login`), linked from the practice page footer.
+- One filter row (difficulty + voice, defaulting to what you've played most). Tiles: day streak (all levels), average score with change vs last week, rounds, best. Accuracy-over-time chart (last 30 days) with a table view. Tendency (too high / too low). Range card: low / middle / high thirds of the voice range, with each band's notes as score-coloured chips so beginners learn which notes are which. Recent rounds.
+- Rounds are loaded in the browser, not on the server, so streaks and days use the viewer's time zone, and because Cache Components forbids reading the clock during prerender.
 
 **Phase 6: Beginner curriculum + range finder.**
 - A `/range` page: sing your lowest and highest comfortable notes, then save `range_low`/`range_high` to `profiles`. This replaces the lower/higher voice toggle.

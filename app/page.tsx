@@ -8,6 +8,7 @@ import { DIFFICULTY_LEVELS, type Difficulty } from "@/lib/audio/config";
 import { scoreAttempt, type AttemptResult, type Sample } from "@/lib/exercises/scoring";
 import { PitchGraph } from "@/components/PitchGraph";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { scoreColor } from "@/components/score";
 import { sleep } from "@/lib/utils";
 import { VOICE_RANGES, randomNoteInRange, type Voice } from "@/lib/exercises/voices";
 import { createClient } from "@/lib/supabase/client";
@@ -23,12 +24,6 @@ const SING_MS = 5000;
 function pickTarget(voice: Voice, previous: number | null): number {
   const { low, high } = VOICE_RANGES[voice];
   return randomNoteInRange(low, high, previous);
-}
-
-function scoreColor(accuracy: number): string {
-  if (accuracy >= 70) return "text-green-600";
-  if (accuracy >= 40) return "text-amber-500";
-  return "text-red-500";
 }
 
 const VOICE_OPTIONS = (Object.keys(VOICE_RANGES) as Voice[]).map((v) => ({ value: v, label: VOICE_RANGES[v].label }));
@@ -229,6 +224,7 @@ export default function MatchPage() {
               {saveState === "saved" && "saved · "}
               {saveState === "error" && <span className="text-red-600">couldn&apos;t save that one · </span>}
               logged in as {email} ·{" "}
+              <Link href="/progress" className="font-medium text-gray-900 hover:underline">progress</Link> ·{" "}
               <button onClick={signOut} className="font-medium text-gray-900 hover:underline">
                 sign out
               </button>
