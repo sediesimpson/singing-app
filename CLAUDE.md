@@ -35,7 +35,7 @@ lib/
     notes.ts          Hz <-> MIDI <-> note name maths, cents
     usePitch.ts       Mic + pitchy hook, with median smoothing and dropout hold
     tonePlayer.ts     playTone(midi, seconds) using voice samples, synth fallback, preloadTone()
-    config.ts         IN_TUNE_CENTS (shared in-tune threshold, currently 20)
+    config.ts         DIFFICULTY_LEVELS (in-tune threshold per level: 20 / 15 / 10 cents), IN_TUNE_CENTS default
   exercises/
     scoring.ts        scoreAttempt(): accuracy %, avg cents, settle time, octave folding; scoreSequence() for patterns
     voices.ts         VOICE_RANGES, Voice, randomNoteInRange()

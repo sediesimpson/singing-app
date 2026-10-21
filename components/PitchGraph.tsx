@@ -26,20 +26,23 @@ type Props = {
   targetMidi?: number | null;
   centerMidi?: number | null; // pin the view here, e.g. the middle of a scale
   paused?: boolean;           // freeze the picture, e.g. while showing a result
+  inTuneCents?: number;       // width of the green band either side of the target
   height?: number;
 };
 
-export function PitchGraph({ reading, targetMidi = null, centerMidi = null, paused = false, height = 260 }: Props) {
+export function PitchGraph({ reading, targetMidi = null, centerMidi = null, paused = false, inTuneCents = IN_TUNE_CENTS, height = 260 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const readingRef = useRef(reading);
   const targetRef = useRef(targetMidi);
   const centerRef = useRef(centerMidi);
   const pausedRef = useRef(paused);
+  const inTuneRef = useRef(inTuneCents);
 
   useEffect(() => { readingRef.current = reading; }, [reading]);
   useEffect(() => { targetRef.current = targetMidi; }, [targetMidi]);
   useEffect(() => { centerRef.current = centerMidi; }, [centerMidi]);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
+  useEffect(() => { inTuneRef.current = inTuneCents; }, [inTuneCents]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,6 +71,7 @@ export function PitchGraph({ reading, targetMidi = null, centerMidi = null, paus
       const now = performance.now();
       const r = readingRef.current;
       const target = targetRef.current;
+      const inTune = inTuneRef.current;
 
       // 1. Record this frame, forget anything older than the window
       points.push({ t: now, midi: r ? r.midi : null });
@@ -116,7 +120,7 @@ export function PitchGraph({ reading, targetMidi = null, centerMidi = null, paus
 
       // 6. Target band: the zone that counts as in tune, with a dashed centre line and its name
       if (target !== null) {
-        const band = IN_TUNE_CENTS / 100;
+        const band = inTune / 100;
         const top = yFor(target + band);
         const bottom = yFor(target - band);
         const mid = yFor(target);
@@ -139,7 +143,7 @@ export function PitchGraph({ reading, targetMidi = null, centerMidi = null, paus
       // 7. Your voice: green when in tune, amber when off, fading out as it gets older
       const colorFor = (midi: number) => {
         const aim = target ?? Math.round(midi);
-        return Math.abs(midi - aim) * 100 <= IN_TUNE_CENTS ? COLORS.inTune : COLORS.off;
+        return Math.abs(midi - aim) * 100 <= inTune ? COLORS.inTune : COLORS.off;
       };
       ctx.lineWidth = 3.5;
       ctx.lineCap = "round";
