@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { midiToNoteName, type NoteReading } from "@/lib/audio/notes";
 import { IN_TUNE_CENTS } from "@/lib/audio/config";
 
-const WINDOW_MS = 5000;        // show the last 5 seconds
+const WINDOW_MS = 6000;        // show the last 6 seconds (fits a whole 5 s attempt)
 const VISIBLE_SEMITONES = 12;  // one octave tall
 const LABEL_WIDTH = 40;        // space on the left for note names
 

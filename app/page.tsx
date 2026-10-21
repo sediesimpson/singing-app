@@ -14,7 +14,7 @@ type Phase = "idle" | "listen" | "sing" | "result";
 
 const TONE_SECONDS = 1.5;
 const GAP_MS = 300;
-const SING_MS = 3000;
+const SING_MS = 5000;
 
 function pickTarget(voice: Voice, previous: number | null): number {
   const { low, high } = VOICE_RANGES[voice];
