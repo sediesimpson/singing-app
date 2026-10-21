@@ -107,7 +107,12 @@ export default function MatchPage() {
         {target !== null && (
           <p className="text-sm text-gray-500 mb-2">Target: {midiToNoteName(target)}</p>
         )}
-        <PitchGraph reading={reading} targetMidi={target} paused={phase === "result"} />
+        {/* Hide the mic while the reference note plays, or the graph would draw the speaker, not you */}
+        <PitchGraph
+          reading={phase === "listen" ? null : reading}
+          targetMidi={target}
+          paused={phase === "result"}
+        />
       </div>
 
       {!busy && (
