@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePitch } from "@/lib/audio/usePitch";
-import { playTone, preloadTone } from "@/lib/audio/tonePlayer";
+import { playTone, preloadTone, unlockAudio } from "@/lib/audio/tonePlayer";
 import { DIFFICULTY_LEVELS, type Difficulty } from "@/lib/audio/config";
 import { scoreAttempt, type AttemptResult, type Sample } from "@/lib/exercises/scoring";
 import { PitchGraph } from "@/components/PitchGraph";
@@ -46,7 +46,7 @@ function feedback(r: AttemptResult, inTuneCents: number): string {
 }
 
 export default function MatchPage() {
-  const { reading, isListening, error, start } = usePitch();
+  const { reading, error, start, stop } = usePitch();
   const [voice, setVoice] = useState<Voice>("lower");
   const [difficulty, setDifficulty] = useState<Difficulty>("beginner");
   const inTuneCents = DIFFICULTY_LEVELS[difficulty].inTuneCents;
@@ -85,19 +85,29 @@ export default function MatchPage() {
   }
 
   async function runRound(note: number) {
-    if (!isListening) await start();
+    unlockAudio(); // must come first: after the first `await` the phone no longer counts this as part of the tap
     setResult(null);
     setSaveState("idle");
     setTarget(note);
 
+    // The mic is only open while you sing. iPhones turn playback down (and send it to the
+    // earpiece) whenever a page has the mic open, so the note plays with it closed.
     setPhase("listen");
     await playTone(note, TONE_SECONDS);
-    await sleep(GAP_MS);
+
+    // Open the mic during the pause. On the first round this is when the permission prompt appears,
+    // so wait for both: the pause and your answer.
+    const [micReady] = await Promise.all([start(), sleep(GAP_MS)]);
+    if (!micReady) {
+      setPhase("idle");
+      return;
+    }
 
     samplesRef.current = [];
     singStartRef.current = performance.now();
     setPhase("sing");
     await sleep(SING_MS);
+    stop();
 
     const score = scoreAttempt(samplesRef.current, note, singStartRef.current, { inTuneCents });
     setResult(score ?? "no-voice");
