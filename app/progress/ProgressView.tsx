@@ -133,7 +133,7 @@ function Dashboard({ attempts }: { attempts: SavedAttempt[] }) {
   return (
     <>
       {/* One filter row for everything below it */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <SegmentedControl options={DIFFICULTY_OPTIONS} value={difficulty} onChange={setChosenDifficulty} />
         <SegmentedControl options={VOICE_OPTIONS} value={voice} onChange={setChosenVoice} />
       </div>
