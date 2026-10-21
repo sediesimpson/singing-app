@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { usePitch } from "@/lib/audio/usePitch";
 import { playTone, preloadTone } from "@/lib/audio/tonePlayer";
-import { midiToNoteName } from "@/lib/audio/notes";
 import { IN_TUNE_CENTS } from "@/lib/audio/config";
 import { scoreAttempt, type AttemptResult, type Sample } from "@/lib/exercises/scoring";
 import { PitchGraph } from "@/components/PitchGraph";
@@ -21,11 +20,18 @@ function pickTarget(voice: Voice, previous: number | null): number {
   return randomNoteInRange(low, high, previous);
 }
 
+function scoreColor(accuracy: number): string {
+  if (accuracy >= 70) return "text-green-600";
+  if (accuracy >= 40) return "text-amber-500";
+  return "text-red-500";
+}
+
 function feedback(r: AttemptResult): string {
   if (r.accuracy >= 70) return "Spot on. You matched it.";
-  if (r.avgCents > IN_TUNE_CENTS) return "Close. You were a bit sharp (too high), so aim slightly lower.";
-  if (r.avgCents < -IN_TUNE_CENTS) return "Close. You were a bit flat (too low), so aim slightly higher.";
-  return "Close. You were wobbling around the note, so try holding it steadier.";
+  const opener = r.accuracy >= 40 ? "Close." : "Not quite.";
+  if (r.avgCents > IN_TUNE_CENTS) return `${opener} You were sharp (too high), so aim lower.`;
+  if (r.avgCents < -IN_TUNE_CENTS) return `${opener} You were flat (too low), so aim higher.`;
+  return `${opener} You were wobbling around the note, so try holding it steadier.`;
 }
 
 export default function MatchPage() {
@@ -71,68 +77,101 @@ export default function MatchPage() {
   const busy = phase === "listen" || phase === "sing";
 
   return (
-    <main className="min-h-screen flex flex-col items-center gap-6 p-8">
-      <div className="w-full max-w-2xl flex items-center justify-end">
-        <div className="flex gap-2">
-          {(Object.keys(VOICE_RANGES) as Voice[]).map((v) => (
-            <button
-              key={v}
-              onClick={() => setVoice(v)}
-              className={`rounded-lg border px-3 py-1 text-sm ${voice === v ? "bg-gray-100 font-medium" : ""}`}
-            >
-              {VOICE_RANGES[v].label}
-            </button>
-          ))}
+    <main className="min-h-screen flex flex-col items-center px-6 py-6">
+      <div className="w-full max-w-2xl flex flex-col gap-5">
+        <header className="flex items-center justify-between">
+          <span className="text-sm font-semibold tracking-tight">Singing Trainer</span>
+          {/* Voice range: a two-way switch, locked while a round is running */}
+          <div className="flex rounded-full bg-gray-100 p-1 text-sm">
+            {(Object.keys(VOICE_RANGES) as Voice[]).map((v) => (
+              <button
+                key={v}
+                onClick={() => setVoice(v)}
+                disabled={busy}
+                className={`rounded-full px-3 py-1 transition disabled:cursor-not-allowed ${
+                  voice === v ? "bg-white font-medium shadow-sm" : "text-gray-500 hover:text-gray-800"
+                }`}
+              >
+                {VOICE_RANGES[v].label}
+              </button>
+            ))}
+          </div>
+        </header>
+
+        <div className="text-center">
+          <h1 className="text-3xl font-semibold tracking-tight">Match the note</h1>
+          <p className="mt-1 text-gray-500">Listen to the note, then sing it back.</p>
         </div>
-      </div>
 
-      <h1 className="text-2xl font-medium">Match the note</h1>
+        {/* Status: fixed height so the graph doesn't jump around between phases */}
+        <div className="h-24 flex flex-col items-center justify-center gap-2 text-center">
+          {phase === "idle" && <p className="text-gray-400">Press play when you&apos;re ready.</p>}
+          {phase === "listen" && (
+            <>
+              <span className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-gray-500" />
+                Listening
+              </span>
+              <p className="text-2xl font-medium">Listen to the note…</p>
+            </>
+          )}
+          {phase === "sing" && (
+            <>
+              <p className="text-2xl font-semibold text-green-600">Now sing it!</p>
+              <div className="h-1.5 w-48 overflow-hidden rounded-full bg-gray-100">
+                <div
+                  className="h-full origin-left rounded-full bg-green-500"
+                  style={{ animation: `fill-bar ${SING_MS}ms linear forwards` }}
+                />
+              </div>
+            </>
+          )}
+          {phase === "result" && result === "no-voice" && (
+            <p className="max-w-sm text-amber-600">I didn&apos;t hear you. Try singing a bit louder or closer to the mic.</p>
+          )}
+          {phase === "result" && result && result !== "no-voice" && (
+            <>
+              <p className={`text-6xl font-semibold tabular-nums tracking-tight ${scoreColor(result.accuracy)}`}>
+                {result.accuracy}%
+              </p>
+              <p className="text-gray-600">{feedback(result)}</p>
+            </>
+          )}
+        </div>
 
-      <div className="h-24 flex flex-col items-center justify-center text-center">
-        {phase === "idle" && <p className="text-gray-500">Press play, listen to the note, then sing it back.</p>}
-        {phase === "listen" && <p className="text-2xl">Listen…</p>}
-        {phase === "sing" && <p className="text-2xl font-medium text-green-600">Now sing it!</p>}
-        {phase === "result" && result === "no-voice" && (
-          <p className="text-amber-600">I didn&apos;t hear you. Try singing a bit louder or closer to the mic.</p>
-        )}
-        {phase === "result" && result && result !== "no-voice" && (
-          <>
-            <p className="text-5xl font-medium">{result.accuracy}%</p>
-            <p className="text-gray-600">{feedback(result)}</p>
-          </>
-        )}
-      </div>
-
-      <div className="w-full max-w-2xl">
-        {target !== null && (
-          <p className="text-sm text-gray-500 mb-2">Target: {midiToNoteName(target)}</p>
-        )}
         {/* Hide the mic while the reference note plays, or the graph would draw the speaker, not you */}
         <PitchGraph
           reading={phase === "listen" ? null : reading}
           targetMidi={target}
           paused={phase === "result"}
+          height={240}
         />
-      </div>
 
-      {!busy && (
-        <div className="flex gap-3">
-          {phase === "result" && target !== null && (
-            <button onClick={() => runRound(target)} className="rounded-lg border px-6 py-3 hover:bg-gray-100">
+        {/* Fixed height for the same reason: buttons hide while you sing */}
+        <div className="h-12 flex justify-center gap-3">
+          {!busy && phase === "result" && target !== null && (
+            <button
+              onClick={() => runRound(target)}
+              className="rounded-full bg-white px-6 font-medium ring-1 ring-gray-200 transition hover:bg-gray-50"
+            >
               Try again
             </button>
           )}
-          <button
-            onClick={() => runRound(pickTarget(voice, target))}
-            className="rounded-lg border px-6 py-3 hover:bg-gray-100"
-          >
-            {phase === "idle" ? "Play a note" : "Next note"}
-          </button>
+          {!busy && (
+            <button
+              onClick={() => runRound(pickTarget(voice, target))}
+              className="rounded-full bg-gray-900 px-6 font-medium text-white transition hover:bg-gray-700"
+            >
+              {phase === "idle" ? "Play a note" : "Next note"}
+            </button>
+          )}
         </div>
-      )}
 
-      {error && <p className="text-red-600">{error}</p>}
-      <p className="text-xs text-gray-400">Tip: use headphones so the mic doesn&apos;t pick up the reference note.</p>
+        {error && <p className="text-center text-sm text-red-600">{error}</p>}
+        <p className="text-center text-xs text-gray-400">
+          Tip: use headphones so the mic doesn&apos;t pick up the reference note.
+        </p>
+      </div>
     </main>
   );
 }

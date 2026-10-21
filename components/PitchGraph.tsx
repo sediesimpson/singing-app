@@ -103,13 +103,13 @@ export function PitchGraph({ reading, targetMidi = null, centerMidi = null, paus
         const name = midiToNoteName(m);
         if (name.includes("#")) continue;
         const y = Math.round(yFor(m)) + 0.5; // +0.5 keeps 1px lines crisp
+        if (y < 8 || y > h - 8) continue; // skip lines and labels squashed against the edges
         ctx.strokeStyle = m % 12 === 0 ? COLORS.gridC : COLORS.grid;
         ctx.beginPath();
         ctx.moveTo(LABEL_WIDTH, y);
         ctx.lineTo(w, y);
         ctx.stroke();
         if (target !== null && Math.abs(m - target) < 1) continue; // the target label goes here instead
-        if (y < 8 || y > h - 8) continue; // don't draw labels half cut off at the edges
         ctx.fillStyle = COLORS.label;
         ctx.fillText(name, 8, y);
       }
