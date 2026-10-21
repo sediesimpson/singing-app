@@ -70,13 +70,13 @@ lib/
 - In-tune threshold widened to ±20 cents for a beginner. The plan is to tighten it to 15, then 10, as accuracy improves.
 
 **Phase 2: Pitch graph.**
-- `PitchGraph`: a canvas with its own rAF loop, a 5 s window, a 1-octave view that eases towards the target or the voice, semitone grid lines with note labels, DPR scaling, a target band, and line segments coloured green or amber.
+- `PitchGraph`: a canvas with its own rAF loop, a 6 s window, a 1-octave view that eases towards the target or the voice, semitone grid lines with note labels, DPR scaling, a target band, and line segments coloured green or amber.
 - Free practice page with a target note picker from A2 to A4. (Later removed: the app is now just match-the-note.)
 
 **Phase 3a: Match the note.**
 - `tonePlayer.ts`: `smplr` Soundfont `voice_oohs` (try `choir_aahs` as an alternative), with a cached load promise and a synth fallback. The synth uses detuned sawtooths, vibrato, a low-pass filter and an envelope.
 - `scoring.ts`: `scoreAttempt`, with a 500 ms settle time, at least 10 samples, octave folding via `centsFromTarget`, accuracy as % of time in tune, and signed average cents.
-- Match page (now the home page at `/`): lower/higher voice toggle, play → sing for 3 s → score, with sharp/flat feedback, "Try again" and "Next note".
+- Match page (now the home page at `/`): lower/higher voice toggle, play → sing for 5 s → score, with sharp/flat feedback, "Try again" and "Next note".
 
 **Phase 3b: 5-note scale.**
 - Shared pieces extracted: `lib/utils.ts` (`sleep`), `lib/exercises/voices.ts`, `lib/exercises/patterns.ts`. The match page imports them.
@@ -112,7 +112,7 @@ lib/
 **Phase 7: Polish + deploy.**
 - Mic permission errors and an unsupported-browser message.
 - Mobile layout.
-- Dark mode, including canvas colours (currently hard-coded hex in `PitchGraph`).
+- Light mode only for now (`color-scheme: light` in `globals.css`). Canvas colours are hard-coded hex in `PitchGraph`.
 - A headphones tip in onboarding.
 - Deploy to Vercel, with the env vars set in the Vercel dashboard.
 
