@@ -76,12 +76,13 @@ export default function MatchPage() {
 
   const busy = phase === "listen" || phase === "sing";
 
+  // All text is lowercase. Buttons need their own rule: Tailwind's base styles reset text-transform on them
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-6">
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-6 lowercase [&_button]:lowercase">
       <div className="w-full max-w-2xl flex flex-col gap-5">
         <header className="flex items-center justify-between">
           <span role="img" aria-label="Singing Trainer" className="text-2xl leading-none text-gray-800">
-            ♪♫
+            ♫♫♫
           </span>
           {/* Voice range: a two-way switch, locked while a round is running */}
           <div className="flex rounded-full bg-gray-100 p-1 text-sm">
