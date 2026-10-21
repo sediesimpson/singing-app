@@ -26,8 +26,7 @@ npm run lint
 
 ```
 app/
-  page.tsx            Free practice: live note display, target picker, pitch graph
-  match/page.tsx      Match-the-note exercise
+  page.tsx            Match-the-note exercise (the app's only page)
 components/
   PitchGraph.tsx      Scrolling canvas graph of your voice vs target band
 lib/
@@ -72,15 +71,15 @@ lib/
 
 **Phase 2: Pitch graph.**
 - `PitchGraph`: a canvas with its own rAF loop, a 5 s window, a 1-octave view that eases towards the target or the voice, semitone grid lines with note labels, DPR scaling, a target band, and line segments coloured green or amber.
-- Free practice page with a target note picker from A2 to A4.
+- Free practice page with a target note picker from A2 to A4. (Later removed: the app is now just match-the-note.)
 
 **Phase 3a: Match the note.**
 - `tonePlayer.ts`: `smplr` Soundfont `voice_oohs` (try `choir_aahs` as an alternative), with a cached load promise and a synth fallback. The synth uses detuned sawtooths, vibrato, a low-pass filter and an envelope.
 - `scoring.ts`: `scoreAttempt`, with a 500 ms settle time, at least 10 samples, octave folding via `centsFromTarget`, accuracy as % of time in tune, and signed average cents.
-- `/match` page: lower/higher voice toggle, play → sing for 3 s → score, with sharp/flat feedback, "Try again" and "Next note".
+- Match page (now the home page at `/`): lower/higher voice toggle, play → sing for 3 s → score, with sharp/flat feedback, "Try again" and "Next note".
 
 **Phase 3b: 5-note scale.**
-- Shared pieces extracted: `lib/utils.ts` (`sleep`), `lib/exercises/voices.ts`, `lib/exercises/patterns.ts`. `/match` imports them.
+- Shared pieces extracted: `lib/utils.ts` (`sleep`), `lib/exercises/voices.ts`, `lib/exercises/patterns.ts`. The match page imports them.
 - `scoreAttempt` takes optional `{ settleMs, minSamples }`. `scoreSequence(samples, windows)` scores each note window (150 ms settle, at least 5 samples), counts missed notes as 0 and returns `{ perNote, overall }`.
 - `PitchGraph` has an optional `centerMidi` prop; the view follows `centerMidi ?? target ?? voice`.
 - **`/scale` page shelved for now** (focusing on pitch practice). It was built and then removed; it's in git history (commit `6bd6aa1`) if we bring it back. The `lib/` pieces above stay.
