@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- ♫ drawn as shapes so it looks the same everywhere. One colour (the app's in-tune green)
-       that shows on both light and dark tab bars: browsers don't reliably tell an icon which one it's on. -->
-  <g fill="#16a34a">
+  <!-- ♫ drawn as shapes so it looks the same everywhere. One fixed colour: browsers don't
+       reliably tell an icon whether the tab bar is light or dark. -->
+  <g fill="#000000">
     <ellipse cx="8.5" cy="25" rx="5" ry="3.8" transform="rotate(-20 8.5 25)" />
     <ellipse cx="23" cy="22" rx="5" ry="3.8" transform="rotate(-20 23 22)" />
     <rect x="11.6" y="6" width="2.2" height="19" />
