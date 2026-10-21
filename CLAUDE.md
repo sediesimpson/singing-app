@@ -9,7 +9,7 @@ A full-stack web app that trains a complete beginner to sing. You sing into the 
 ## Stack
 
 - **Next.js (App Router) + TypeScript + Tailwind.** No `src/` directory; `@/` maps to the project root.
-- **Supabase.** Postgres, Auth, Row Level Security. Not added yet; that's Phase 4.
+- **Supabase.** Postgres, Auth (email + password), Row Level Security. Logging in is optional: anyone can practise, logged-in users get their scores saved.
 - **Web Audio API + `pitchy`.** Pitch detection runs entirely in the browser. Mic audio never leaves the device; only scores get saved.
 - **`smplr`.** Plays recorded "Voice Oohs" soundfont samples as reference notes, with a synth fallback.
 - **Vercel.** For deployment, in Phase 7.
@@ -25,12 +25,22 @@ npm run lint
 ## Project structure
 
 ```
+proxy.ts              Next 16 "proxy" (was middleware): refreshes the Supabase session on each request
 app/
-  page.tsx            Match-the-note exercise (the app's only page)
+  page.tsx            Match-the-note exercise; saves each score when logged in
+  actions.ts          saveAttempt() Server Action (re-checks the login, inserts into attempts)
+  login/, signup/     Auth pages (both render components/AuthForm.tsx)
+  auth/actions.ts     logIn / signUp Server Actions
+  auth/confirm/       Route handler for the email confirmation link
+  auth/error/         Shown when a confirmation link is broken or expired
 components/
   PitchGraph.tsx      Scrolling canvas graph of your voice vs target band
+  SegmentedControl.tsx  Pill-shaped switch (difficulty, voice)
+  AuthForm.tsx        Log-in / sign-up form
+supabase/migrations/  SQL to run in the Supabase SQL editor
 lib/
   utils.ts            sleep()
+  supabase/           env.ts, server.ts (Server Actions/Route Handlers), client.ts (browser), proxy.ts (updateSession)
   audio/
     notes.ts          Hz <-> MIDI <-> note name maths, cents
     usePitch.ts       Mic + pitchy hook, with median smoothing and dropout hold
@@ -86,20 +96,14 @@ lib/
 
 ### To do
 
-**Phase 4: Supabase + auth** (branch `phase-4-supabase`).
-- Create a Supabase project, put its keys in `.env.local`, check `git status` doesn't list it, and commit `.env.example`.
-- Install `@supabase/supabase-js` and `@supabase/ssr`. Add browser and server client helpers in `lib/supabase/`.
-- Write a migration in `supabase/migrations/` for these tables, with RLS turned on for all of them:
-  - `profiles`: id (references `auth.users`), display_name, voice_type, range_low, range_high (MIDI numbers).
-  - `exercises`: id, slug, name, level, sort_order, type (`match` | `pattern`), pattern (jsonb of offsets and syllables). Read-only for users.
-  - `sessions`: id, user_id, started_at, duration_sec.
-  - `attempts`: id, session_id, user_id, exercise_id, target/root midi, accuracy, avg_cents, per_note (jsonb), created_at.
-  - Policies use `user_id = auth.uid()`. `exercises` can be read by any authenticated user.
-- Sign-up and login pages under `app/(auth)/`, plus middleware that protects the practice routes.
-- Seed `exercises` with match-the-note and the 5-note scale, then load them from the database instead of hard-coding them.
+**Phase 4: Supabase + auth** (branch `phase-4-supabase`), simplified from the original plan.
+- Done in code: `@supabase/ssr` clients, `proxy.ts`, email + password log-in/sign-up, email confirmation route, optional login, and one `attempts` table (migration in `supabase/migrations/`) with RLS: users can read and insert only their own rows.
+- Saving: after each scored round, logged-in users' attempts are saved via `saveAttempt`. "Didn't hear you" rounds aren't saved.
+- Deliberately skipped for now: `profiles`, `exercises` and `sessions` tables. Add them when the range finder (Phase 6) or more exercises need them.
+- Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local` (see `.env.example`).
+- Supabase dashboard: Auth → URL Configuration needs `http://localhost:3000/auth/confirm` in Redirect URLs (and the Vercel URL later).
 
-**Phase 5: Saving progress.**
-- A server action that saves sessions and attempts after each round, from `AttemptResult` / `SequenceResult`.
+**Phase 5: Progress page.**
 - A `/progress` page: accuracy over time, streak, attempts per exercise, and sharp/flat tendency.
 
 **Phase 6: Beginner curriculum + range finder.**

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePitch } from "@/lib/audio/usePitch";
 import { playTone, preloadTone } from "@/lib/audio/tonePlayer";
 import { DIFFICULTY_LEVELS, type Difficulty } from "@/lib/audio/config";
@@ -9,8 +10,11 @@ import { PitchGraph } from "@/components/PitchGraph";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { sleep } from "@/lib/utils";
 import { VOICE_RANGES, randomNoteInRange, type Voice } from "@/lib/exercises/voices";
+import { createClient } from "@/lib/supabase/client";
+import { saveAttempt } from "@/app/actions";
 
 type Phase = "idle" | "listen" | "sing" | "result";
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 const TONE_SECONDS = 1.5;
 const GAP_MS = 300;
@@ -49,6 +53,9 @@ export default function MatchPage() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [target, setTarget] = useState<number | null>(null);
   const [result, setResult] = useState<AttemptResult | "no-voice" | null>(null);
+  // undefined = still checking, null = logged out (that's fine, practice still works)
+  const [email, setEmail] = useState<string | null | undefined>(undefined);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
 
   const samplesRef = useRef<Sample[]>([]);
   const singStartRef = useRef(0);
@@ -64,9 +71,23 @@ export default function MatchPage() {
     preloadTone();
   }, []);
 
+  // Find out whether someone is logged in, and keep it up to date if they sign out
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getClaims().then(({ data }) => setEmail(data?.claims?.email ?? null));
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => setEmail(session?.user.email ?? null));
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  async function signOut() {
+    await createClient().auth.signOut();
+    setSaveState("idle");
+  }
+
   async function runRound(note: number) {
     if (!isListening) await start();
     setResult(null);
+    setSaveState("idle");
     setTarget(note);
 
     setPhase("listen");
@@ -81,6 +102,20 @@ export default function MatchPage() {
     const score = scoreAttempt(samplesRef.current, note, singStartRef.current, { inTuneCents });
     setResult(score ?? "no-voice");
     setPhase("result");
+
+    // Logged in? Save the score in the background. Rounds where we didn't hear you aren't saved.
+    if (score && email) {
+      setSaveState("saving");
+      const { ok } = await saveAttempt({
+        targetMidi: note,
+        voice,
+        difficulty,
+        accuracy: score.accuracy,
+        avgCents: score.avgCents,
+        sampleCount: score.sampleCount,
+      }).catch(() => ({ ok: false }));
+      setSaveState(ok ? "saved" : "error");
+    }
   }
 
   const busy = phase === "listen" || phase === "sing";
@@ -174,6 +209,26 @@ export default function MatchPage() {
         <p className="text-center text-xs text-gray-400">
           Tip: use headphones so the mic doesn&apos;t pick up the reference note.
         </p>
+
+        {/* Logging in is optional: it's only needed to save your progress */}
+        <footer className="h-5 text-center text-xs text-gray-500">
+          {email === null && (
+            <>
+              <Link href="/login" className="font-medium text-gray-900 hover:underline">log in</Link> or{" "}
+              <Link href="/signup" className="font-medium text-gray-900 hover:underline">sign up</Link> to save your progress
+            </>
+          )}
+          {email && (
+            <>
+              {saveState === "saved" && "saved · "}
+              {saveState === "error" && <span className="text-red-600">couldn&apos;t save that one · </span>}
+              logged in as {email} ·{" "}
+              <button onClick={signOut} className="font-medium text-gray-900 hover:underline">
+                sign out
+              </button>
+            </>
+          )}
+        </footer>
       </div>
     </main>
   );
