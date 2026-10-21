@@ -138,7 +138,7 @@ function Dashboard({ attempts }: { attempts: SavedAttempt[] }) {
         <SegmentedControl options={VOICE_OPTIONS} value={voice} onChange={setChosenVoice} />
       </div>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3">
         <Tile label={streak === 1 ? "day streak" : "days in a row"} value={String(streak)} />
         <Tile
           label="average score"
