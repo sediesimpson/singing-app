@@ -77,10 +77,12 @@ export default function MatchPage() {
   const busy = phase === "listen" || phase === "sing";
 
   return (
-    <main className="min-h-screen flex flex-col items-center px-6 py-6">
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-6">
       <div className="w-full max-w-2xl flex flex-col gap-5">
         <header className="flex items-center justify-between">
-          <span className="text-sm font-semibold tracking-tight">Singing Trainer</span>
+          <span role="img" aria-label="Singing Trainer" className="text-2xl leading-none text-gray-800">
+            ♪♫
+          </span>
           {/* Voice range: a two-way switch, locked while a round is running */}
           <div className="flex rounded-full bg-gray-100 p-1 text-sm">
             {(Object.keys(VOICE_RANGES) as Voice[]).map((v) => (
@@ -99,8 +101,8 @@ export default function MatchPage() {
         </header>
 
         <div className="text-center">
-          <h1 className="text-3xl font-semibold tracking-tight">Match the note</h1>
-          <p className="mt-1 text-gray-500">Listen to the note, then sing it back.</p>
+          <h1 className="text-3xl font-semibold tracking-tight">match the note</h1>
+          <p className="mt-1 text-gray-500">listen to the note, then sing it back.</p>
         </div>
 
         {/* Status: fixed height so the graph doesn't jump around between phases */}
