@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Singing Trainer",
+  title: "match the note",
   description: "Hear a note, sing it back, and see how close you got.",
 };
 
