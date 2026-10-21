@@ -14,18 +14,21 @@ type Props = {
   reading: NoteReading | null;
   targetMidi?: number | null;
   centerMidi?: number | null; // pin the view here, e.g. the middle of a scale
+  paused?: boolean;           // freeze the picture, e.g. while showing a result
   height?: number;
 };
 
-export function PitchGraph({ reading, targetMidi = null, centerMidi = null, height = 260 }: Props) {
+export function PitchGraph({ reading, targetMidi = null, centerMidi = null, paused = false, height = 260 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const readingRef = useRef(reading);
   const targetRef = useRef(targetMidi);
   const centerRef = useRef(centerMidi);
+  const pausedRef = useRef(paused);
 
   useEffect(() => { readingRef.current = reading; }, [reading]);
   useEffect(() => { targetRef.current = targetMidi; }, [targetMidi]);
   useEffect(() => { centerRef.current = centerMidi; }, [centerMidi]);
+  useEffect(() => { pausedRef.current = paused; }, [paused]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -35,8 +38,21 @@ export function PitchGraph({ reading, targetMidi = null, centerMidi = null, heig
     const points: Point[] = [];
     let center = centerRef.current ?? targetRef.current ?? 57; // start the view around A3
     let raf = 0;
+    let wasPaused = false;
 
     const draw = () => {
+      // While paused, skip drawing so the last frame stays on screen.
+      // On resume, start with a clean graph instead of the old attempt jumping sideways.
+      if (pausedRef.current) {
+        wasPaused = true;
+        raf = requestAnimationFrame(draw);
+        return;
+      }
+      if (wasPaused) {
+        points.length = 0;
+        wasPaused = false;
+      }
+
       const now = performance.now();
       const r = readingRef.current;
       const target = targetRef.current;

@@ -107,7 +107,7 @@ export default function MatchPage() {
         {target !== null && (
           <p className="text-sm text-gray-500 mb-2">Target: {midiToNoteName(target)}</p>
         )}
-        <PitchGraph reading={reading} targetMidi={target} />
+        <PitchGraph reading={reading} targetMidi={target} paused={phase === "result"} />
       </div>
 
       {!busy && (
