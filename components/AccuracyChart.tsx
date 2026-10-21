@@ -129,7 +129,7 @@ export function AccuracyChart({ points, days }: Props) {
         >
           <div className="text-sm font-semibold text-gray-900">{hovered.accuracy}%</div>
           <div className="text-gray-500 whitespace-nowrap">
-            {fmtDay(hovered.day)} · {hovered.rounds} {hovered.rounds === 1 ? "round" : "rounds"}
+            {fmtDay(hovered.day)} · {hovered.rounds} {hovered.rounds === 1 ? "try" : "tries"}
           </div>
         </div>
       )}

@@ -98,7 +98,7 @@ export function ProgressView() {
 
         {attempts && attempts.length === 0 && (
           <div className="flex flex-col items-start gap-4 rounded-2xl bg-gray-50 p-6">
-            <p className="text-gray-600">sing a few rounds and your progress will show up here.</p>
+            <p className="text-gray-600">sing a few tries and your progress will show up here.</p>
             <Link href="/" className="rounded-full bg-gray-900 px-6 py-3 font-medium text-white hover:bg-gray-700">
               start practising
             </Link>
@@ -149,17 +149,17 @@ function Dashboard({ attempts }: { attempts: SavedAttempt[] }) {
               : `${summary.changeVsLastWeek >= 0 ? "↑" : "↓"} ${Math.abs(summary.changeVsLastWeek)} on last week`
           }
         />
-        <Tile label="rounds sung" value={String(summary.rounds)} />
+        <Tile label="tries" value={String(summary.rounds)} />
         <Tile label="best score" value={summary.bestScore === null ? "—" : `${summary.bestScore}%`} />
       </section>
 
       {shown.length === 0 ? (
-        <p className="text-gray-500">no rounds at this level and voice yet. try another filter above.</p>
+        <p className="text-gray-500">no tries at this level and voice yet. try another filter above.</p>
       ) : (
         <>
           <Card title="accuracy over time" subtitle={`average score per day, last ${CHART_DAYS} days`}>
             {daily.length === 0 ? (
-              <p className="text-sm text-gray-500">no rounds in the last {CHART_DAYS} days.</p>
+              <p className="text-sm text-gray-500">no tries in the last {CHART_DAYS} days.</p>
             ) : (
               <>
                 <AccuracyChart points={daily} days={CHART_DAYS} />
@@ -167,7 +167,7 @@ function Dashboard({ attempts }: { attempts: SavedAttempt[] }) {
                   <summary className="cursor-pointer">view as table</summary>
                   <table className="mt-2 w-full text-left">
                     <thead className="text-gray-400">
-                      <tr><th className="font-normal">day</th><th className="font-normal">average</th><th className="font-normal">rounds</th></tr>
+                      <tr><th className="font-normal">day</th><th className="font-normal">average</th><th className="font-normal">tries</th></tr>
                     </thead>
                     <tbody className="tabular-nums text-gray-700">
                       {daily.map((p) => (
@@ -210,7 +210,7 @@ function Dashboard({ attempts }: { attempts: SavedAttempt[] }) {
                     {band.notes.map((n) => (
                       <span
                         key={n.midi}
-                        title={n.accuracy === null ? "not tried yet" : `${n.accuracy}% over ${n.rounds} ${n.rounds === 1 ? "round" : "rounds"}`}
+                        title={n.accuracy === null ? "not tried yet" : `${n.accuracy}% over ${n.rounds} ${n.rounds === 1 ? "try" : "tries"}`}
                         className={`rounded-md px-2 py-1 text-xs font-medium normal-case ${scoreChip(n.accuracy)}`}
                       >
                         {midiToNoteName(n.midi)}
@@ -225,7 +225,7 @@ function Dashboard({ attempts }: { attempts: SavedAttempt[] }) {
             <p className="mt-2 text-xs text-gray-400">green = strong · amber = okay · red = tricky · grey = not tried yet</p>
           </Card>
 
-          <Card title="recent rounds">
+          <Card title="your last tries">
             <ul className="divide-y divide-gray-100">
               {shown.slice(0, RECENT_COUNT).map((a) => (
                 <li key={a.createdAt.getTime()} className="flex items-center justify-between py-2 text-sm">
