@@ -112,7 +112,7 @@ lib/
 **Phase 7: Polish + deploy.**
 - Mic permission errors and an unsupported-browser message.
 - Mobile layout.
-- Dark mode, including canvas colours (currently hard-coded hex in `PitchGraph`).
+- Light mode only for now (`color-scheme: light` in `globals.css`). Canvas colours are hard-coded hex in `PitchGraph`.
 - A headphones tip in onboarding.
 - Deploy to Vercel, with the env vars set in the Vercel dashboard.
 
