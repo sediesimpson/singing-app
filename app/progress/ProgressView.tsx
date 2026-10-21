@@ -81,7 +81,7 @@ export function ProgressView() {
 
   return (
     <main className="min-h-screen flex flex-col items-center px-6 py-10 lowercase [&_button]:lowercase">
-      <div className="w-full max-w-2xl flex flex-col gap-8">
+      <div className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-8">
         <header className="flex items-center justify-between">
           <Link href="/" aria-label="Singing Trainer: back to practice" className="text-2xl leading-none text-gray-800">
             ♫♫♫
@@ -138,7 +138,7 @@ function Dashboard({ attempts }: { attempts: SavedAttempt[] }) {
         <SegmentedControl options={VOICE_OPTIONS} value={voice} onChange={setChosenVoice} />
       </div>
 
-      <section className="grid grid-cols-2 gap-3">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Tile label={streak === 1 ? "day streak" : "days in a row"} value={String(streak)} />
         <Tile
           label="average score"
@@ -156,7 +156,8 @@ function Dashboard({ attempts }: { attempts: SavedAttempt[] }) {
       {shown.length === 0 ? (
         <p className="text-gray-500">no rounds at this level and voice yet. try another filter above.</p>
       ) : (
-        <>
+        // Two columns on wide screens (two rows of two), one column on narrower ones
+        <div className="grid gap-6 lg:grid-cols-2">
           <Card title="accuracy over time" subtitle={`average score per day, last ${CHART_DAYS} days`}>
             {daily.length === 0 ? (
               <p className="text-sm text-gray-500">no rounds in the last {CHART_DAYS} days.</p>
@@ -236,7 +237,7 @@ function Dashboard({ attempts }: { attempts: SavedAttempt[] }) {
               ))}
             </ul>
           </Card>
-        </>
+        </div>
       )}
     </>
   );
