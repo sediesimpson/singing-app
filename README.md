@@ -2,7 +2,7 @@
 
 A web app that helps complete beginners learn to sing in tune. You hear a note, sing it back, and see your pitch live on a graph. The app scores how closely you matched it and tells you whether to aim higher or lower. Log in to save your scores and track your progress over time.
 
-Live at [singing-app-zeta.vercel.app](https://singing-app-zeta.vercel.app).
+Live at [sing.sedinam.com](https://sing.sedinam.com).
 
 ## Features
 
