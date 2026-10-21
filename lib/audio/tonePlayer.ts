@@ -1,9 +1,14 @@
 import { Soundfont } from "smplr";
 import { midiToFrequency } from "./notes";
+import { setAudioSession } from "./audioSession";
 
 // How long the note takes to fade out once it ends. Kept short so the tail
 // doesn't spill into the time you're meant to be singing.
 const RELEASE_SEC = 0.15;
+
+// Loudness, 0–127. smplr squares it (gain = v² / 127²), so small changes matter.
+// Raised from 90 because phones play web audio quietly; lower it if it's too loud on laptops.
+const VELOCITY = 110;
 
 let audioCtx: AudioContext | null = null;
 let voicePromise: Promise<Soundfont> | null = null;
@@ -15,7 +20,8 @@ function getAudioContext(): AudioContext {
 
 function getVoice(): Promise<Soundfont> {
   if (!voicePromise) {
-    const voice = new Soundfont(getAudioContext(), { instrument: "voice_oohs" });
+    // volume 127 is smplr's maximum (default 100): phones play web audio quietly
+    const voice = new Soundfont(getAudioContext(), { instrument: "voice_oohs", volume: 127 });
     voicePromise = voice.ready
       .then(() => voice)
       .catch((err) => {
@@ -39,12 +45,13 @@ export function preloadTone(): void {
 }
 
 export async function playTone(midi: number, durationSec = 1.5): Promise<void> {
+  setAudioSession("playback"); // full-volume media playback on iPhone, through the loudspeaker
   const ctx = getAudioContext();
   if (ctx.state === "suspended") await ctx.resume();
 
   try {
     const voice = await getVoice();
-    voice.start({ note: midi, velocity: 90, duration: durationSec, ampRelease: RELEASE_SEC });
+    voice.start({ note: midi, velocity: VELOCITY, duration: durationSec, ampRelease: RELEASE_SEC });
     await new Promise((resolve) => setTimeout(resolve, durationSec * 1000));
   } catch {
     await playSynthTone(ctx, midi, durationSec);

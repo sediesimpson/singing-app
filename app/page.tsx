@@ -129,12 +129,13 @@ export default function MatchPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-6 lowercase [&_button]:lowercase">
       <div className="w-full max-w-2xl flex flex-col gap-5">
-        <header className="flex items-center justify-between">
+        {/* Phones: logo, then each switch on its own full-width row. Wider screens: one row. */}
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <span role="img" aria-label="Singing Trainer" className="text-2xl leading-none text-gray-800">
             ♫♫♫
           </span>
           {/* Settings are locked while a round is running */}
-          <div className="flex flex-wrap justify-end gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
             <SegmentedControl options={DIFFICULTY_OPTIONS} value={difficulty} onChange={setDifficulty} disabled={busy} />
             <SegmentedControl options={VOICE_OPTIONS} value={voice} onChange={setVoice} disabled={busy} />
           </div>
@@ -146,7 +147,7 @@ export default function MatchPage() {
         </div>
 
         {/* Status: fixed height so the graph doesn't jump around between phases */}
-        <div className="h-24 flex flex-col items-center justify-center gap-2 text-center">
+        <div className="h-32 sm:h-24 flex flex-col items-center justify-center gap-2 text-center">
           {phase === "idle" && <p className="text-gray-400">Press play when you&apos;re ready.</p>}
           {phase === "listen" && (
             <>

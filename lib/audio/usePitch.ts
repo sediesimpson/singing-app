@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PitchDetector } from "pitchy";
 import { frequencyToMidi, frequencyToNote, midiToFrequency, type NoteReading } from "./notes";
+import { setAudioSession } from "./audioSession";
 
 const MIN_CLARITY = 0.9;
 const MIN_FREQ = 60;
@@ -31,6 +32,7 @@ export function usePitch() {
   // Returns whether the mic opened, so callers can stop if permission was refused
   const start = useCallback(async (): Promise<boolean> => {
     setError(null);
+    setAudioSession("play-and-record"); // iPhone needs this mode before it will open the mic
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
