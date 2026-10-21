@@ -128,7 +128,7 @@ lib/
 
 ## Known notes and ideas
 
-- **iPhone audio:** call `unlockAudio()` synchronously at the start of a tap handler, before any `await`, or Safari stays silent. And keep the mic closed while reference notes play: iOS turns playback down (earpiece-quiet) whenever the mic is open. The match page opens the mic only for the sing phase. The note was still too quiet on iPhone Safari after that, so `lib/audio/audioSession.ts` now sets Safari's `navigator.audioSession.type` to `playback` before each note and `play-and-record` before the mic opens, and the note is louder (smplr `volume: 127`, `VELOCITY = 110`). Not yet confirmed on a real iPhone.
+- **iPhone audio:** call `unlockAudio()` synchronously at the start of a tap handler, before any `await`, or Safari stays silent. And keep the mic closed while reference notes play: iOS turns playback down (earpiece-quiet) whenever the mic is open. The match page opens the mic only for the sing phase. The note was still too quiet on iPhone Safari after that, so `lib/audio/audioSession.ts` now sets Safari's `navigator.audioSession.type` to `playback` before each note and `play-and-record` before the mic opens, and the note is louder (smplr `volume: 127`, `VELOCITY = 110`). Confirmed working on an iPhone (2026-10-21).
 - If the reading shows "—" too often, try `MIN_CLARITY = 0.85` in `usePitch.ts`.
 - The voice samples download from the internet on first use; `preloadTone()` is called on page mount to hide the delay.
 - Run `getSoundfontNames()` from `smplr` to list the available sample instruments.
