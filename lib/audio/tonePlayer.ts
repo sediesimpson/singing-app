@@ -1,6 +1,10 @@
 import { Soundfont } from "smplr";
 import { midiToFrequency } from "./notes";
 
+// How long the note takes to fade out once it ends. Kept short so the tail
+// doesn't spill into the time you're meant to be singing.
+const RELEASE_SEC = 0.15;
+
 let audioCtx: AudioContext | null = null;
 let voicePromise: Promise<Soundfont> | null = null;
 
@@ -33,7 +37,7 @@ export async function playTone(midi: number, durationSec = 1.5): Promise<void> {
 
   try {
     const voice = await getVoice();
-    voice.start({ note: midi, velocity: 90, duration: durationSec });
+    voice.start({ note: midi, velocity: 90, duration: durationSec, ampRelease: RELEASE_SEC });
     await new Promise((resolve) => setTimeout(resolve, durationSec * 1000));
   } catch {
     await playSynthTone(ctx, midi, durationSec);

@@ -17,7 +17,7 @@ type Phase = "idle" | "listen" | "sing" | "result";
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 const TONE_SECONDS = 1.5;
-const GAP_MS = 300;
+const GAP_MS = 500; // covers the note fading out, plus usePitch holding its last reading
 const SING_MS = 5000;
 
 function pickTarget(voice: Voice, previous: number | null): number {
@@ -206,10 +206,6 @@ export default function MatchPage() {
         </div>
 
         {error && <p className="text-center text-sm text-red-600">{error}</p>}
-        <p className="text-center text-xs text-gray-400">
-          Tip: use headphones so the mic doesn&apos;t pick up the reference note.
-        </p>
-
         {/* Logging in is optional: it's only needed to save your progress */}
         <footer className="h-5 text-center text-xs text-gray-500">
           {email === null && (
