@@ -28,7 +28,8 @@ export function usePitch() {
     setReading(null);
   }, []);
 
-  const start = useCallback(async () => {
+  // Returns whether the mic opened, so callers can stop if permission was refused
+  const start = useCallback(async (): Promise<boolean> => {
     setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -77,8 +78,10 @@ export function usePitch() {
       audioCtxRef.current = audioCtx;
       setIsListening(true);
       tick();
+      return true;
     } catch {
       setError("Couldn't access your microphone. Check your browser's permission settings.");
+      return false;
     }
   }, []);
 
