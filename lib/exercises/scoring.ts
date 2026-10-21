@@ -11,6 +11,7 @@ export type AttemptResult = {
 export type ScoreOptions = {
   settleMs?: number;   // ignore this long at the start while you find the note
   minSamples?: number; // fewer than this = we didn't really hear you
+  inTuneCents?: number; // how close counts as in tune (depends on difficulty)
 };
 
 const SETTLE_MS = 500;
@@ -30,13 +31,13 @@ export function scoreAttempt(
   samples: Sample[],
   target: number,
   singStartedAt: number,
-  { settleMs = SETTLE_MS, minSamples = MIN_SAMPLES }: ScoreOptions = {}
+  { settleMs = SETTLE_MS, minSamples = MIN_SAMPLES, inTuneCents = IN_TUNE_CENTS }: ScoreOptions = {}
 ): AttemptResult | null {
   const usable = samples.filter((s) => s.t - singStartedAt >= settleMs);
   if (usable.length < minSamples) return null;
 
   const offsets = usable.map((s) => centsFromTarget(s.midi, target));
-  const inTune = offsets.filter((c) => Math.abs(c) <= IN_TUNE_CENTS).length;
+  const inTune = offsets.filter((c) => Math.abs(c) <= inTuneCents).length;
   const avg = offsets.reduce((sum, c) => sum + c, 0) / offsets.length;
 
   return {

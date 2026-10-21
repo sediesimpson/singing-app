@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { usePitch } from "@/lib/audio/usePitch";
 import { playTone, preloadTone } from "@/lib/audio/tonePlayer";
-import { IN_TUNE_CENTS } from "@/lib/audio/config";
+import { DIFFICULTY_LEVELS, type Difficulty } from "@/lib/audio/config";
 import { scoreAttempt, type AttemptResult, type Sample } from "@/lib/exercises/scoring";
 import { PitchGraph } from "@/components/PitchGraph";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { sleep } from "@/lib/utils";
 import { VOICE_RANGES, randomNoteInRange, type Voice } from "@/lib/exercises/voices";
 
@@ -26,17 +27,25 @@ function scoreColor(accuracy: number): string {
   return "text-red-500";
 }
 
-function feedback(r: AttemptResult): string {
+const VOICE_OPTIONS = (Object.keys(VOICE_RANGES) as Voice[]).map((v) => ({ value: v, label: VOICE_RANGES[v].label }));
+const DIFFICULTY_OPTIONS = (Object.keys(DIFFICULTY_LEVELS) as Difficulty[]).map((d) => ({
+  value: d,
+  label: DIFFICULTY_LEVELS[d].label,
+}));
+
+function feedback(r: AttemptResult, inTuneCents: number): string {
   if (r.accuracy >= 70) return "Spot on. You matched it.";
   const opener = r.accuracy >= 40 ? "Close." : "Not quite.";
-  if (r.avgCents > IN_TUNE_CENTS) return `${opener} You were sharp (too high), so aim lower.`;
-  if (r.avgCents < -IN_TUNE_CENTS) return `${opener} You were flat (too low), so aim higher.`;
+  if (r.avgCents > inTuneCents) return `${opener} You were sharp (too high), so aim lower.`;
+  if (r.avgCents < -inTuneCents) return `${opener} You were flat (too low), so aim higher.`;
   return `${opener} You were wobbling around the note, so try holding it steadier.`;
 }
 
 export default function MatchPage() {
   const { reading, isListening, error, start } = usePitch();
   const [voice, setVoice] = useState<Voice>("lower");
+  const [difficulty, setDifficulty] = useState<Difficulty>("beginner");
+  const inTuneCents = DIFFICULTY_LEVELS[difficulty].inTuneCents;
   const [phase, setPhase] = useState<Phase>("idle");
   const [target, setTarget] = useState<number | null>(null);
   const [result, setResult] = useState<AttemptResult | "no-voice" | null>(null);
@@ -69,7 +78,7 @@ export default function MatchPage() {
     setPhase("sing");
     await sleep(SING_MS);
 
-    const score = scoreAttempt(samplesRef.current, note, singStartRef.current);
+    const score = scoreAttempt(samplesRef.current, note, singStartRef.current, { inTuneCents });
     setResult(score ?? "no-voice");
     setPhase("result");
   }
@@ -84,20 +93,10 @@ export default function MatchPage() {
           <span role="img" aria-label="Singing Trainer" className="text-2xl leading-none text-gray-800">
             ♫♫♫
           </span>
-          {/* Voice range: a two-way switch, locked while a round is running */}
-          <div className="flex rounded-full bg-gray-100 p-1 text-sm">
-            {(Object.keys(VOICE_RANGES) as Voice[]).map((v) => (
-              <button
-                key={v}
-                onClick={() => setVoice(v)}
-                disabled={busy}
-                className={`rounded-full px-3 py-1 transition disabled:cursor-not-allowed ${
-                  voice === v ? "bg-white font-medium shadow-sm" : "text-gray-500 hover:text-gray-800"
-                }`}
-              >
-                {VOICE_RANGES[v].label}
-              </button>
-            ))}
+          {/* Settings are locked while a round is running */}
+          <div className="flex flex-wrap justify-end gap-2">
+            <SegmentedControl options={DIFFICULTY_OPTIONS} value={difficulty} onChange={setDifficulty} disabled={busy} />
+            <SegmentedControl options={VOICE_OPTIONS} value={voice} onChange={setVoice} disabled={busy} />
           </div>
         </header>
 
@@ -137,7 +136,7 @@ export default function MatchPage() {
               <p className={`text-6xl font-semibold tabular-nums tracking-tight ${scoreColor(result.accuracy)}`}>
                 {result.accuracy}%
               </p>
-              <p className="text-gray-600">{feedback(result)}</p>
+              <p className="text-gray-600">{feedback(result, inTuneCents)}</p>
             </>
           )}
         </div>
@@ -147,6 +146,7 @@ export default function MatchPage() {
           reading={phase === "listen" ? null : reading}
           targetMidi={target}
           paused={phase === "result"}
+          inTuneCents={inTuneCents}
           height={240}
         />
 
